@@ -156,7 +156,7 @@ for full source code, please reference in our github repo.
 Here we simplfied code snippets by trimming away some details for improved readbility on core logic.
 
 
-> workflow (1) Selenium UI Automation: upload receipt image -> OCR -> LLM -> selenium -> ODOO 
+> ### workflow (1) Selenium UI Automation: upload receipt image -> OCR -> LLM -> selenium -> ODOO 
 
 > upload receipt image 
 
@@ -322,7 +322,7 @@ def json_to_odoo(odoo_user, odoo_pass, module, json, supporting_dropdown_json, u
 
 ---
 
-> workflow (2) Inherit Odoo Expense [ Attach Receipt ] Button:
+> ### workflow (2) Inherit Odoo Expense [ Attach Receipt ] Button:
 
 > Click Attach Receipt Button to run additional logic of OCR and LLM processing
 
@@ -472,7 +472,7 @@ def attach_document(self, **kwargs):
 
 ---
 
-> workflow (3) : upload receipt image -> OCR -> LLM -> xmlrpc -> ODOO 
+> ### workflow (3) : upload receipt image -> OCR -> LLM -> xmlrpc -> ODOO 
 
 > upload image to flask, and it all the way finished to create expense record in backend.
 
