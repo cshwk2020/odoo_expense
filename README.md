@@ -325,7 +325,7 @@ def json_to_odoo(odoo_user, odoo_pass, module, json, supporting_dropdown_json, u
 
 ![](./odoo_expense_doc/vid_expense_odoo_inherit_attachReceiptBtn_2.jpg)
 
-> Waiting for OCR and LLM processing to complete in backend
+> ### Waiting for OCR and LLM processing to complete in backend
 
 ### - ms.py, [ attach_document ] processing
 
