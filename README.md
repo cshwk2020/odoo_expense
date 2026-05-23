@@ -110,8 +110,7 @@ after received receipt image from anywhere (in our demo, we use web upload but i
 
 ### - ODOO module : automation_dashboard 
     
-beside microservice, there is a ODOO module for staff to monitoring the automated expense processing status, and manual edit and fix the expense form  
-when LLM has difficulty handling ambigous OCR text from vague receipt images.
+beside microservice, there is a ODOO module for staff to monitoring the automated expense processing status, and manual edit and fix the expense form when LLM has difficulty handling ambigous OCR text from vague receipt images.
 
 [https://github.com/cshwk2020/odoo/tree/19.0/addons/automation_dashboard](https://github.com/cshwk2020/odoo/tree/19.0/addons/automation_dashboard)
 
