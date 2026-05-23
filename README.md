@@ -578,6 +578,8 @@ def run_job(filepath, module, odoo_user, odoo_pass):
  
 - message = fields.Text("Message")
 
+> ### all fields of Automation Monitoring model:
+ 
 ```
 class AutomationMonitoring(models.Model):
 
