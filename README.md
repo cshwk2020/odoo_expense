@@ -578,8 +578,24 @@ def run_job(filepath, module, odoo_user, odoo_pass):
  
 - message = fields.Text("Message")
 
-> ### all fields of Automation Monitoring model:
+> ### expense status: 
  
+- incomplete: expense information was incomplete, possibly due to low image quality or LLM unable to extract information from receipt with disorgnized layout.
+- complete: expense was completely created with no missing information.
+- reviewed: staff reviewed the expense record and fixed the record if needed. Any incomplete or complete records need to be reviewed by staff.
+- error: any error during processing.
+
+``` 
+status = fields.Selection([
+        ("incomplete", "Incomplete"),
+        ("complete", "Complete"),
+        ("reviewed", "Reviewed"),
+        ("error", "Error"),
+    ], string="Status", default="incomplete")
+```
+
+> ### all fields of Automation Monitoring model to assist staff in identifying issues with incomplete or error processing of receipt images:
+
 ```
 class AutomationMonitoring(models.Model):
 
