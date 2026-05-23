@@ -1,11 +1,11 @@
 
 ## Portfolio Project: automate receipt to ODOO expense records
 
-> Introduction: 
+> ### Introduction: 
 
 - This project automates expense entry into Odoo ERP using OCR and LLM parsing.
 
-> Key pipeline steps:
+> ### Key pipeline steps:
 
 - upload receipt image  
 
@@ -18,7 +18,7 @@
 - staff regularly review automation status of each auto-created odoo expense, and fix it when needed.
 
 
-> Business Benefit
+> ### Business Benefit
 
 Manual expense entry is slow, error‑prone, and frustrating for employees.  
 This project eliminates repetitive data entry by automatically reading receipts, parsing them into structured data, and inserting them directly into Odoo ERP.  
@@ -26,9 +26,9 @@ This project eliminates repetitive data entry by automatically reading receipts,
 Result: faster reimbursements, fewer mistakes, and saved time.
 
 
-> Three Iterations of Expense Automation:
+> ### Three Iterations of Expense Automation:
 
-> 1. Selenium UI Automation
+> ### 1. Selenium UI Automation
 
 - Approach: upload receipt image, and selenium will drive Odoo’s web interface, filling expense forms and uploading receipts automatically.
 
@@ -44,7 +44,7 @@ Result: faster reimbursements, fewer mistakes, and saved time.
   - Requires user to wait and watch the automation run.
 
 
-> 2. Odoo Expense Button Extension
+> ### 2. Odoo Expense Button Extension
 
 - Approach: Inherit Odoo’s [ Attach Receipt ] button, add logic to call EasyOCR + LLM, then parse text into JSON that matches `hr.expense` fields.
 
@@ -61,7 +61,7 @@ Result: faster reimbursements, fewer mistakes, and saved time.
   - Still depends on user interaction (semi‑automated).
 
 
-> 3. XML‑RPC Direct Insertion
+> ### 3. XML‑RPC Direct Insertion
 
 - Approach: upload receipt image, and XML‑RPC API direct calls to insert expense record to odoo in the background.
 
