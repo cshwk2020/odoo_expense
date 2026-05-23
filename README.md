@@ -560,6 +560,7 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_1.jpg)
 
+
 > ### detail information for each receipt processing for staff to follow up.
 
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_2.jpg)
@@ -567,13 +568,71 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_4.jpg)
 
 
+> ### Automation Monitoring model fields
+
+> ### ask LLM to give confidence score ( 0.0 - 1.0 ) estimate of ocr to JSON, based on ambiguity of images.
+
+- confidence = fields.Float("Confidence", digits=(3,2))
+
+> ### ask LLM to give message as reason, if confidence was lower than certain level.
+ 
+- message = fields.Text("Message")
+
+```
+class AutomationMonitoring(models.Model):
+
+    _name = "automation.monitoring"
+    _description = "Automation Monitoring"
+
+    module = fields.Selection([
+        ("expense", "Expense"),
+        ("invoice", "Invoice"),
+    ], string="Module", required=True)
+
+    record_date = fields.Date(
+        string="Record Date",
+        related="ref_id.date",
+        store=False,   # no duplicate storage, always live from hr.expense
+        readonly=True
+    )
+
+    raw_image = fields.Binary("Raw Image")
+    preocr_image = fields.Binary("Preprocessed Image")
+    ocr_text = fields.Text("OCR Text")
+    ocr_json = fields.Text("OCR JSON")
+
+    status = fields.Selection([
+        ("incomplete", "Incomplete"),
+        ("complete", "Complete"),
+        ("reviewed", "Reviewed"),
+        ("error", "Error"),
+    ], string="Status", default="incomplete")
+
+    ref_id = fields.Many2one("hr.expense",
+                             string="Reference Expense",
+                             ondelete="set null")
+
+    ref_url = fields.Char("Reference URL")
+    submit_screenshot = fields.Binary("Submit Screenshot")
+    confidence = fields.Float("Confidence", digits=(3,2))
+    message = fields.Text("Message")
+
+    # image hash for check dupliacate receipt upload
+    image_hash = fields.Char("Receipt Image Hash", index=True)
+    remark = fields.Text(string="Remark")
+
+    # transient fields for search
+    from_date = fields.Date(string="From Date")
+    to_date = fields.Date(string="To Date")
+
+```
 
 
 
 ---
 ---
 
-## Appendix: EasyOCR slow when running in CPU ~ use MOCK API CALL
+## Appendix: EasyOCR slow when running in low tier device ~ use MOCK API CALL
 
 > MODE_REAL = False
 
