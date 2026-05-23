@@ -37,7 +37,6 @@ Result: faster reimbursements, fewer mistakes, and saved time.
 - Pros:
   - High traceability: users can visually see what the automation is doing.
   - Easy to debug when something goes wrong (selectors, fields).
-  - No need to modify Odoo’s backend.
 
 - Cons:
   - Fragile: UI changes break selectors.
