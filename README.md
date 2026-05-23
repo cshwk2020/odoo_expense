@@ -573,7 +573,7 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 ---
 ---
 
-## Appendix: EasyOcr slow when running in CPU ~ use MOCK API CALL
+## Appendix: EasyOCR slow when running in CPU ~ use MOCK API CALL
 
 > MODE_REAL = False
 
