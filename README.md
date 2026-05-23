@@ -68,16 +68,14 @@ Result: faster reimbursements, fewer mistakes, and saved time.
 [![Click to Watch the youtube demo](./odoo_expense_doc/ocr_llm_xmlrpc_odoo.jpg)](https://youtu.be/DMegoO_GpFw)
 
 - Pros:
+  - users occasionally review automation records instead of watching every run.
   - Fast, lightweight, no browser overhead.
   - Scales better for batch automation.
 
 - Cons:
   - No visual traceability: users cannot see each record being filled.
-  - Debugging is harder (errors only visible in logs).
   - Risk of silent mistakes if not reviewed.
-  - users occasionally review automation records instead of watching every run.
-
-
+   
 
 ---
 
