@@ -567,3 +567,304 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_4.jpg)
 
 
+
+
+
+---
+---
+
+## Appendix: EasyOcr slow when running in CPU ~ use MOCK API CALL
+
+> MODE_REAL = False
+
+> MOCK_FILE_PATH = "/Users/cshwk1995/Desktop/img/receipts/IMG_2150.jpg"
+
+> MOCK_FILE_OCR_TEXTS = ['1393', '缸轟中心1#:27643118', '四州鼠苜牛廂蠣五包裝', '40. 00', '火船牌三合-白吻味1OPC', '17. 50', '51. 50', '00', '低a#', '儻', '-6.0', '輒"付a0', '57. 50', '0. 00', '襯', '100. 00', '42. 5(', '25042026/18:54/0807/002/3985/00002406', '2504260004980023985', '虫即日起至2026年5月21日於門市或惠康網', '店買滿$50,即可掃d? Code參加初夏派禮大', '抽獎,齊抽八一萬份獎品,其中包括豈曾獎', '品及僂患/現金券 受條款及細則約束.', 'Jiin', 'the Wlellcome Early Summer Lucky', 'Draw;', 'Spend $50', 'at physical', 'stores', 'or', 'online shop', 'and', 'scan', 'the OR', 'code below', 'to join', 'the', 'lucky', 'draw', 'from', 'today', 't0', '21', 'nay.', '800k', 'prizes,', 'including', 'freebies', 'and', 'coupon$,', 'await', 'Terms', 'and', 'conditions appiy.', '', 'voul']
+
+```
+def run_easyocr_bytes(image_bytes):
+
+    if MODE_REAL:
+        return real_easyocr_bytes(image_bytes)
+    else:
+        return mock_easyocr_bytes(image_bytes)
+
+
+def mock_easyocr_bytes(image_bytes):
+    
+    mock_file_obj = filepath_to_fileobj(MOCK_FILE_PATH)
+    gray_image = convert_to_gray_image(mock_file_obj)
+    return gray_image, MOCK_FILE_OCR_TEXTS
+
+
+def real_easyocr_bytes(image_bytes):
+
+    reader = easyocr.Reader(['ch_tra', 'en'])
+    gray_image = convert_to_gray_image(image_bytes)
+    results = reader.readtext(gray_image)
+
+    texts = [text for (_, text, _) in results]
+    for (_, text, prob) in results:
+        print(f"OCR detected: {text} (confidence {prob:.2f})")
+        if stop_flag.is_set():
+            return
+        
+    return gray_image, texts
+
+```
+
+---
+---
+
+## Appendix: LLM Token Cost minimalization ~ use MOCK API CALL
+
+> MODE_REAL = False
+
+> MOCK_FILE_LLM_JSON = {
+    "summary": {
+        "total_amount": 57.5,
+        "employee": "Tester1",
+        "manager": "",
+        "paid_by": "own_account",
+        "name": "Receipt from Wellcome",
+        "date": "2026-04-25",
+        "category": "Food",
+        "confidence_level": 0.7,
+        "status": "complete",
+        "remark": "OK"
+    },
+    "details": [
+        {
+        "price_unit": 40.0,
+        "quantity": 1,
+        "item": "四洲蘿荀牛瞞麵五包裝"
+        },
+        {
+        "price_unit": 17.5,
+        "quantity": 1,
+        "item": "火船牌三合一白咖啡10PC"
+        }
+    ]
+}
+
+
+```
+def run_ai_convert_text_to_json(ocr_text, expense_dropdowns):
+
+    if MODE_REAL:
+        return real_ai_convert_text_to_json(ocr_text, expense_dropdowns)
+    else:
+        return mock_ai_convert_text_to_json(ocr_text, expense_dropdowns)
+
+
+def mock_ai_convert_text_to_json(ocr_text, expense_dropdowns):
+ 
+    return MOCK_FILE_LLM_JSON
+
+
+def real_ai_convert_text_to_json(ocr_text, expense_dropdowns):
+    
+    if expense_dropdowns["categories"]:
+        categories = expense_dropdowns["categories"]
+    else:
+        categories = [] 
+
+    if expense_dropdowns["employee"]:
+        employee = expense_dropdowns["employee"]
+    else:
+        employee = {}
+
+    if expense_dropdowns["manager"]:
+        manager = expense_dropdowns["manager"]
+    else:
+        manager = {}
+
+
+    # deepseek
+    employee_name = employee['name']
+    manager_name = manager['name']
+    categories_str = ", ".join([c["code"] for c in categories])
+
+    payload = {
+        "model": API_MODEL_VER,
+        "messages": [
+            {
+                "role": "system",
+                "content": f"""
+                You are a parser that converts messy OCR receipt text into JSON for Odoo ERP.
+                Rules:
+                - Output one JSON object with keys: summary, details.
+                - summary must include these exact keys: 
+                    total_amount, employee, manager, paid_by, name, date, 
+                    category, confidence_level
+                - Do not use synonyms like "total" or "amount", 
+                    for example, always use "total_amount".
+                - category must be inferred overall all items in the receipt 
+                    (choose ONE from this list: {categories_str}).
+                  Always try to classify most appropriate overall receipt category,
+                  If a single category appear matching all items in same receipt, 
+                  use that single category cover all items.
+                  If multiple categories appear for vaious items in the same receipt, 
+                  fallback to the generic EXP_GEN product.
+                - details must list each line item with price_unit, quantity, and item text.
+                - paid_by: either own_account OR company_account". 
+                        Look for keywords like “Cash”, “Visa”, “MasterCard”, “Change”, etc. -> assume employee paid.
+                        Look for “Company Card”, “Corporate Account”, “Paid by Company” -> assume company account.
+                        If your OCR pipeline can’t detect payment mode reliably, 
+                        you can default to "own_account" (since most receipts are employee‑paid) 
+                        and allow manual override.
+                - confidence_level: 0.00 - 1.00, 
+                    based on applying all rules mentioned above, 
+                    to ambiguity level of OCR output provided. 
+                - status must be one of: "incomplete", "complete", "error".
+                        
+                        "complete" if all required summary fields 
+                        are present (total_amount, employee, paid_by, name, date, category) 
+                        AND details list has at least one valid item.
+                        
+                        "incomplete" if some required fields are missing 
+                        or ambiguous (e.g. missing date, missing category, empty details).
+                        
+                        "error" if the OCR text cannot be parsed into valid JSON at all, or if the receipt is unreadable.
+                - if status is NOT complete, need explain reasons in remark field.
+
+
+                - Return only valid JSON { ... } not list  [ ... ].
+                """
+            },
+            {
+                "role": "user",
+                "content": f"""Here is the OCR output:
+
+                    {ocr_text}\n\nEmployee Name: {employee_name}
+
+                    Return JSON as a list of expense records, each matching Odoo hr.expense fields:
+
+                    expense_json example format:
+                    {{
+                    "summary": {{
+                        "total_amount": 84,
+                        "employee":  {employee_name},
+                        "manager":  {manager_name},
+                        "paid_by": "own_account | company_account",
+                        "name": "Receipt from Wellcome",
+                        "date": "2026-04-25",
+                        "category": "XXXXXX",
+                        "confidence_level": 0.00-1.00,
+                        "status": incomplete | complete | error,
+                        "remark": "OK",
+                    }},
+                    "details": [
+                        {{"price_unit": 57.5, "quantity": 1, "item": "四洲蘿荀牛瞞麵五包裝 - 40.0\n火船牌三合一白咖啡10PC - 17.5"}},
+                        {{"price_unit": 26.5, "quantity": 1, "item": "other item might or might not be food"}}
+                    ]
+                    }}
+
+            """
+  
+            }
+          
+        ],
+        "response_format": { "type": "json_object" },
+        "reasoning_effort": "low",
+        "stream": False
+    }
+
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    raw = response.json()
+    content_str = raw["choices"][0]["message"]["content"]
+
+    try:
+        content_json = json.loads(content_str)   # Python dict
+        return content_json
+        
+    except json.JSONDecodeError:
+        raise
+
+```
+
+
+---
+---
+
+## Appendix: Security ~ Avoid sensitive information such as password or LLM ApiKey to be exposed in source code
+
+> Vault
+
+vault server -dev
+
+```
+You may need to set the following environment variables:
+
+    $ export VAULT_ADDR='http://127.0.0.1:8200'
+
+The unseal key and root token are displayed below in case you want to
+seal/unseal the Vault or re-authenticate.
+
+Unseal Key: AR....................9Ml0pZURL8D0=
+Root Token: hvs..................59
+
+Development mode should NOT be used in production installations!
+
+```
+
+```
+export VAULT_ADDR='http://127.0.0.1:8200'
+# replace with your root token
+export VAULT_TOKEN='hvs..................59'
+
+vault secrets enable -path=secret kv
+
+vault kv put secret/app \
+    odoo_user="........." \
+    odoo_pass="........." \
+    deepseek_key="sk-8a42ed.................a3241"
+
+```
+
+###  
+```
+import hvac
+
+client = hvac.Client(
+    url=os.environ["VAULT_ADDR"],
+    token=os.environ["VAULT_TOKEN"]
+)
+
+def vault_get_secret(path):
+    return client.secrets.kv.read_secret_version(path=path)["data"]["data"]
+
+
+def vault_get_odoo_user():
+   
+    app_secrets = vault_get_secret("app")
+    odoo_user = app_secrets["odoo_user"]
+    print("Odoo user:", odoo_user)
+    return odoo_user
+  
+ 
+def vault_get_odoo_pass():
+ 
+    app_secrets = vault_get_secret("app")
+    odoo_pass = app_secrets["odoo_pass"]
+    print("Odoo pass:", odoo_pass)
+    return odoo_pass
+ 
+ 
+def vault_get_deepseek_key():
+ 
+    app_secrets = vault_get_secret("app")
+    deepseek_key = app_secrets["deepseek_key"]
+    print("DeepSeek key:", deepseek_key)
+    return deepseek_key
+```
+
+---
+---
