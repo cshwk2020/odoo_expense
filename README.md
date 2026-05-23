@@ -568,7 +568,7 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_4.jpg)
 
 
-> ### Automation Monitoring model fields
+### Automation Monitoring model fields
 
 > ### ask LLM to give confidence score ( 0.0 - 1.0 ) estimate of ocr to JSON, based on ambiguity of images.
 
