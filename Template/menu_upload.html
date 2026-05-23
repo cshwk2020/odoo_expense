@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Odoo Automation</title>
+  <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='bootstrap/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/eventsource.min.js') }}"></script>
+
+</head>
+<body>
+
+  <div class="container mt-5">
+  <h1 class="mb-4 text-center">Odoo ~ Scan Image to Create New Record</h1>
+
+  <form id="uploadForm" action="/automation" method="post" enctype="multipart/form-data"> 
+    <div class="row">
+      <!-- 左邊大區域 -->
+      <div class="col-md-8">
+        <div class="mb-3">
+          <label for="module" class="form-label">Choose Module:</label>
+          <select id="module" name="module" class="form-select" required>
+            <option>Expense</option>
+            <option>Invoice</option>
+            <option>Purchase</option>
+          </select>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="odooUser" class="form-label">Odoo Username:</label>
+            <input type="text" id="odooUser" name="odooUser" class="form-control" value="{{ odooUser }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="odooPass" class="form-label">Odoo Password:</label>
+            <input type="password" id="odooPass" name="odooPass" class="form-control" value="{{ odooPass }}" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="file" class="form-label">Upload JPG / PDF:</label>
+          <input type="file" id="file" name="receipt"   
+                accept="application/pdf,image/jpeg,image/jpg" class="form-control" required>
+        </div>
+
+        <div class="d-flex align-items-center">
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="button" id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
+          <div id="spinner" style="display:none; margin-left:10px;">
+            <p class="mb-0">Processing... please wait</p>
+          </div>
+        </div>
+
+        <div id="progress" class="mt-3"
+            style="height:400px; overflow-y:auto; border:1px solid #ccc; padding:5px; background:#f8f9fa;">
+        </div>
+      </div>
+
+      <!-- 右邊窄區域：Preview -->
+      <div class="col-md-4">
+        <div id="previewContainer" class="border p-2" style="height:400px; display:none; text-align:center;">
+          <img id="previewImage" src="" alt="Preview" style="max-height:100%; max-width:100%; object-fit:contain;">
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+<script>
+
+document.getElementById("file").addEventListener("change", function(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const previewImg = document.getElementById("previewImage");
+      previewImg.src = e.target.result;
+      document.getElementById("previewContainer").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // 如果唔係 image，就隱藏 preview
+    document.getElementById("previewContainer").style.display = "none";
+  }
+});
+
+
+document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+  e.preventDefault(); // stop full page reload
+
+  console.log('client side: debug...F1...')
+
+  const formData = new FormData(this);
+
+  // Upload file
+  await fetch("/automation", { method: "POST", body: formData });
+
+  // Connect to SSE stream
+  const evtSource = new EventSource("/automation/stream");
+
+  evtSource.onopen = function() {
+    console.log("client side: SSE connection opened");
+  };
+
+  evtSource.onerror = function(err) {
+    console.error("client side: SSE error:", err);
+  };
+
+  evtSource.onmessage = function(e) {
+    console.log("client side: SSE connection onmessage...");
+    const progressDiv = document.getElementById("progress");
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const timestamp = `[${hh}:${mi}:${ss}]`;
+    
+    const p = document.createElement("p");
+    p.textContent = `${timestamp}: ${e.data}`;
+    progressDiv.appendChild(p);
+    progressDiv.scrollTop = progressDiv.scrollHeight;
+
+    if (e.data.includes("OCR started")) {
+      document.getElementById("spinner").style.display = "block";
+    }
+    if (e.data.includes("OCR finished")) {
+      document.getElementById("spinner").style.display = "none";
+    }
+
+  };
+});
+
+document.getElementById("resetBtn").addEventListener("click", async function() {
+  document.getElementById("progress").innerHTML = "";
+  document.getElementById("spinner").style.display = "none";
+  document.getElementById("uploadForm").reset();
+  await fetch("/automation/reset", { method: "POST" });
+});
+
+</script>
+
+</body>
+</html>
