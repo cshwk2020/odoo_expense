@@ -151,7 +151,7 @@ Here we simplfied code snippets by trimming away some details for improved readb
 
 > ### workflow (1) Selenium UI Automation: upload receipt image -> OCR -> LLM -> selenium -> ODOO 
 
-> upload receipt image 
+> ### upload receipt image 
 
 ![](./odoo_expense_doc/web_entry_upload_receipt_image.jpg)
 
@@ -177,7 +177,7 @@ def run_job(filepath, module, odoo_user, odoo_pass):
 ```
 
 
-> selenium auto fill expense form while human watching
+> ### selenium auto fill expense form while human watching
  
 ![](./odoo_expense_doc/ocr_llm_selenium_odoo.jpg)
   
@@ -317,11 +317,11 @@ def json_to_odoo(odoo_user, odoo_pass, module, json, supporting_dropdown_json, u
 
 > ### workflow (2) Inherit Odoo Expense [ Attach Receipt ] Button:
 
-> Click Attach Receipt Button to run additional logic of OCR and LLM processing
+> ### Click Attach Receipt Button to run additional logic of OCR and LLM processing
 
 ![](./odoo_expense_doc/inherit_odoo_attach_receipt_btn.jpg)
 
-> Browse for receipt image to attach to ODOO expense form
+> ### Browse for receipt image to attach to ODOO expense form
 
 ![](./odoo_expense_doc/vid_expense_odoo_inherit_attachReceiptBtn_2.jpg)
 
@@ -467,7 +467,7 @@ def attach_document(self, **kwargs):
 
 > ### workflow (3) : upload receipt image -> OCR -> LLM -> xmlrpc -> ODOO 
 
-> upload image to flask, and it all the way finished to create expense record in backend.
+> ### upload image to flask, and it all the way finished to create expense record in backend.
 
 ![](./odoo_expense_doc/ocr_llm_xmlrpc_odoo.jpg)
 
@@ -556,11 +556,11 @@ def run_job(filepath, module, odoo_user, odoo_pass):
      
 ```
 
-> regularly, staff go to automation_dashboard listing to monitor status of each receipt image processing.
+> ### regularly, staff go to automation_dashboard listing to monitor status of each receipt image processing.
 
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_1.jpg)
 
-> detail information for each receipt processing for staff to follow up.
+> ### detail information for each receipt processing for staff to follow up.
 
 ![](./odoo_expense_doc/vid_expense_odoo_create_by_xmlrpc_2.jpg)
 
