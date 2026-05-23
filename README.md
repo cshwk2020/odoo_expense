@@ -83,9 +83,7 @@ Result: faster reimbursements, fewer mistakes, and saved time.
 
 ### - python flask: 
 
-after n8n received incoming gmail of dedicated staff email account, 
-it will pass to python flask for processing the pipeline all the way 
-from email body to auto-creating sale order records in ODOO backend.
+after received receipt image from anywhere (in our demo, we use web upload but it can be from any source), it will pass to python flask for processing the pipeline all the way from image -> OCR text -> LLM extracting receipt information -> auto-creating expense records in ODOO backend.
 
 [https://github.com/cshwk2020/odoo_expense](https://github.com/cshwk2020/odoo_expense)
 
